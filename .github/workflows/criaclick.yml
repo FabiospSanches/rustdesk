@@ -10,10 +10,6 @@ env:
   VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
   VERSION: "1.5.1"
-  # CriaClick: servidor e chave embutidos no build
-  RENDEZVOUS_SERVER: "remoto.criaclick.com.br"
-  RS_PUB_KEY: "COPNuN2jGq3x3zn4UHkc9SIQZ0qnVrR3zFIlYjPNE0M="
-  API_SERVER: "https://remoto.criaclick.com.br"
 
 jobs:
   windows:
@@ -30,6 +26,23 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           submodules: recursive
+
+      - name: Aplicar marca CriaClick (servidor, chave e nome do app)
+        shell: bash
+        run: |
+          CFG=libs/hbb_common/src/config.rs
+          # Servidor e chave da CriaClick embutidos no binario
+          sed -i 's#pub const RENDEZVOUS_SERVERS: &\[&str\] = &\["rs-ny.rustdesk.com"\];#pub const RENDEZVOUS_SERVERS: \&[\&str] = \&["remoto.criaclick.com.br"];#' "$CFG"
+          sed -i 's#pub const RS_PUB_KEY: &str = "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=";#pub const RS_PUB_KEY: \&str = "COPNuN2jGq3x3zn4UHkc9SIQZ0qnVrR3zFIlYjPNE0M=";#' "$CFG"
+          # Nome do app: aciona o white-label nativo (troca "RustDesk" nos textos traduzidos)
+          sed -i 's#APP_NAME: RwLock<String> = RwLock::new("RustDesk".to_owned());#APP_NAME: RwLock<String> = RwLock::new("CriaClick Remoto".to_owned());#' "$CFG"
+          echo "=== trechos apos o patch ==="
+          grep -n 'RENDEZVOUS_SERVERS: &\[&str\]\|RS_PUB_KEY: &str\|APP_NAME: RwLock' "$CFG" || true
+          # Falha rapido se algum patch nao casou (evita gastar ~1h e sair errado)
+          grep -q 'remoto.criaclick.com.br' "$CFG" || { echo "ERRO: servidor nao aplicado"; exit 1; }
+          grep -q 'COPNuN2jGq3x3zn4UHkc9SIQZ0qnVrR3zFIlYjPNE0M=' "$CFG" || { echo "ERRO: chave nao aplicada"; exit 1; }
+          grep -q 'RwLock::new("CriaClick Remoto".to_owned())' "$CFG" || { echo "ERRO: nome do app nao aplicado"; exit 1; }
+          echo "Marca CriaClick aplicada com sucesso."
 
       - name: Install LLVM and Clang
         uses: KyleMayes/install-llvm-action@ebc0426251bc40c7cd31162802432c68818ab8f0 # v2.0.9

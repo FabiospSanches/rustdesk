@@ -60,3 +60,6 @@ flutter/web/
 /third_party/libdrmtap/
 # Local git worktrees
 .worktrees/
+
+# CriaClick: logo do app precisa entrar no build (a regra *png ignora)
+!flutter/assets/icon.png
