@@ -103,13 +103,16 @@ jobs:
         run: |
           $VCPKG_ROOT/vcpkg install --triplet x64-windows-static --x-install-root="$VCPKG_ROOT/installed"
 
-      - name: Build rustdesk
+      - name: Build rustdesk (exe unico portavel + instalador)
         run: |
-          python3 .\build.py --portable --flutter --skip-portable-pack --hwcodec --vram
-          mv ./flutter/build/windows/x64/runner/Release ./rustdesk
+          python3 .\build.py --portable --flutter --hwcodec --vram
+          $exe = Get-ChildItem -Path . -Filter 'rustdesk-*-install.exe' | Select-Object -First 1
+          if (-not $exe) { Write-Error 'exe portavel (rustdesk-*-install.exe) nao foi gerado'; exit 1 }
+          Copy-Item $exe.FullName .\ClickDesk.exe -Force
+          Write-Host ('Gerado: ' + $exe.Name + ' -> ClickDesk.exe (' + [math]::Round($exe.Length/1MB,1) + ' MB)')
 
       - name: Upload ClickDesk (Windows)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: clickdesk-windows-x64
-          path: rustdesk
+          name: clickdesk-exe
+          path: ClickDesk.exe
