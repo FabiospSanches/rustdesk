@@ -35,13 +35,13 @@ jobs:
           sed -i 's#pub const RENDEZVOUS_SERVERS: &\[&str\] = &\["rs-ny.rustdesk.com"\];#pub const RENDEZVOUS_SERVERS: \&[\&str] = \&["remoto.criaclick.com.br"];#' "$CFG"
           sed -i 's#pub const RS_PUB_KEY: &str = "OeVuKk5nlHiXp+APNn0Y3pC1Iwpwn44JGqrQCsWqmBw=";#pub const RS_PUB_KEY: \&str = "COPNuN2jGq3x3zn4UHkc9SIQZ0qnVrR3zFIlYjPNE0M=";#' "$CFG"
           # Nome do app: aciona o white-label nativo (troca "RustDesk" nos textos traduzidos)
-          sed -i 's#APP_NAME: RwLock<String> = RwLock::new("RustDesk".to_owned());#APP_NAME: RwLock<String> = RwLock::new("CriaClick Remoto".to_owned());#' "$CFG"
+          sed -i 's#APP_NAME: RwLock<String> = RwLock::new("RustDesk".to_owned());#APP_NAME: RwLock<String> = RwLock::new("ClickDesk".to_owned());#' "$CFG"
           echo "=== trechos apos o patch ==="
           grep -n 'RENDEZVOUS_SERVERS: &\[&str\]\|RS_PUB_KEY: &str\|APP_NAME: RwLock' "$CFG" || true
           # Falha rapido se algum patch nao casou (evita gastar ~1h e sair errado)
           grep -q 'remoto.criaclick.com.br' "$CFG" || { echo "ERRO: servidor nao aplicado"; exit 1; }
           grep -q 'COPNuN2jGq3x3zn4UHkc9SIQZ0qnVrR3zFIlYjPNE0M=' "$CFG" || { echo "ERRO: chave nao aplicada"; exit 1; }
-          grep -q 'RwLock::new("CriaClick Remoto".to_owned())' "$CFG" || { echo "ERRO: nome do app nao aplicado"; exit 1; }
+          grep -q 'RwLock::new("ClickDesk".to_owned())' "$CFG" || { echo "ERRO: nome do app nao aplicado"; exit 1; }
           echo "Marca CriaClick aplicada com sucesso."
 
       - name: Install LLVM and Clang
@@ -108,8 +108,8 @@ jobs:
           python3 .\build.py --portable --flutter --skip-portable-pack --hwcodec --vram
           mv ./flutter/build/windows/x64/runner/Release ./rustdesk
 
-      - name: Upload CriaClick Remoto (Windows)
+      - name: Upload ClickDesk (Windows)
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: criaclick-remoto-windows-x64
+          name: clickdesk-windows-x64
           path: rustdesk
